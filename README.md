@@ -1,0 +1,59 @@
+# Agente de Estudos (ADK)
+
+Agente desenvolvido com o **Google Agent Development Kit (ADK)** e **Google Gemini** para criação, acompanhamento e replanejamento de planos de estudos personalizados, com suporte à exportação direta para o Google Agenda via CSV.
+
+## Funcionalidades
+
+- Cria planos personalizados após coletar objetivo, prazo, disponibilidade e nível atual.
+- Organiza o cronograma usando técnicas de aprendizagem ativa e repetição espaçada.
+- Replaneja sessões atrasadas sem concentrar todo o conteúdo em um único dia.
+- Salva o cronograma em `planos/plano-de-estudos.csv`, compatível com importação no Google Agenda.
+
+## Pré-requisitos
+
+- Python 3.13 ou superior.
+- [uv](https://docs.astral.sh/uv/).
+- Uma chave de API do Gemini.
+
+## Configuração Local
+
+1. Clone o repositório e entre na pasta do projeto:
+   ```bash
+   git clone https://github.com/JCmamoa/agente-estudos.git
+   cd agente-estudos
+   ```
+2. Crie seu arquivo de ambiente a partir do exemplo:
+   ```bash
+   cp .env.example .env
+   ```
+3. Preencha `GEMINI_API_KEY` em `.env`. A variável `MODEL` é opcional; o padrão no código é `gemini-1.5-flash`.
+4. Instale as dependências:
+   ```bash
+   uv sync
+   ```
+
+## Execução
+
+Inicie a interface web do ADK a partir da raiz do projeto:
+```bash
+uv run adk web --allow_origins="*"
+```
+
+O modo de depuração do VS Code também está configurado em `.vscode/launch.json`. A opção `--allow_origins="*"` permite qualquer origem e deve ser usada apenas em desenvolvimento.
+
+## Estrutura do Projeto
+
+- `app/agent.py`: ponto de entrada do agente (`root_agent`), com ferramentas de skill e acesso restrito a arquivos.
+- `app/skills/plano-de-estudos/`: instruções e recursos carregados pelo agente conforme necessário.
+- `skills/plano-de-estudos/`: cópia da skill para uso/distribuição independente do diretório da aplicação.
+- `planos/`: diretório de saída dos cronogramas CSV; os arquivos gerados não são versionados.
+
+## Variáveis de Ambiente
+
+| Variável | Obrigatória | Descrição |
+| --- | --- | --- |
+| `GEMINI_API_KEY` | Sim | Chave de API para acessar o Gemini. |
+| `MODEL` | Não | Modelo Gemini usado pelo agente; o valor padrão no código é `gemini-1.5-flash`. |
+| `GOOGLE_GENAI_USE_VERTEXAI` | Não | Configuração do SDK Google GenAI; o exemplo usa `FALSE`. |
+
+Não versionamos `.env`, chaves de API ou planos pessoais. Use `.env.example` apenas como referência, sem inserir credenciais reais nele.

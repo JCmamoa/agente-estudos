@@ -1,0 +1,16 @@
+# Ambientes e segredos
+.env
+.env.*
+!.env.example
+
+# Planos e dados pessoais
+planos/
+*.csv
+
+# Python e UV
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.adk/
