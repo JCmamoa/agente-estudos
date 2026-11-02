@@ -41,6 +41,32 @@ uv run adk web --allow_origins="*"
 
 O modo de depuração do VS Code também está configurado em `.vscode/launch.json`. A opção `--allow_origins="*"` permite qualquer origem e deve ser usada apenas em desenvolvimento.
 
+## Execução com Docker
+
+O `Dockerfile` empacota o ADK web (o segredo entra em runtime, nunca na imagem):
+
+```bash
+docker build -t agente-estudos .
+```
+
+Rode com a porta fixa de teste **8080** (no host) e o diretório `planos/` montado como volume, para que os planos gerados fiquem no seu computador e não dentro do container:
+
+```bash
+# Linux / macOS / Git Bash
+docker run --rm -p 8080:8000 --env-file .env \
+  -v "$(pwd)/planos:/app/planos" agente-estudos
+
+# Windows PowerShell (camadas do Docker aceitam a sintaxe com ${PWD})
+docker run --rm -p 8080:8000 --env-file .env \
+  -v "${PWD}\planos:/app/planos" agente-estudos
+```
+
+Acesse `http://localhost:8080` (no Cloud Shell, use o Web Preview da porta 8080).
+
+- A imagem não contém `.env` nem planos; sem `--env-file`, o servidor sobe, mas o agente não consegue chamar o Gemini.
+- A UI web serve por navegador em qualquer dispositivo — incluindo celular (iOS/Android), que não roda Docker, mas também não precisa: basta abrir a mesma URL/preview no browser.
+- O servidor ADK web é **sem autenticação** (destaque do próprio `adk web`): é para desenvolvimento/teste em rede confiável apenas — não exponha a porta publicamente.
+
 ## Estrutura do Projeto
 
 - `app/agent.py`: ponto de entrada do agente (`root_agent`), com ferramentas de skill e acesso restrito a arquivos.

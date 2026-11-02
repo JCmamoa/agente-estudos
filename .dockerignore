@@ -1,0 +1,11 @@
+# Segredos e dados pessoais: nunca entram na imagem
+.env
+planos/
+
+# Ambiente e artefatos locais
+.venv/
+__pycache__/
+*.py[cod]
+.adk/
+.git/
+.vscode/

@@ -26,24 +26,29 @@ class FerramentasDeArquivo(EnvironmentToolset):
 
     async def get_tools(self, readonly_context=None):
         tools = await super().get_tools(readonly_context)
-        return [
-            t for t in tools
-            if t.name in ("Readfile", "Writefile", "ReadFile", "WriteFile")
-        ]
+        # Nomes reais das ferramentas no ADK 2.x (CamelCase)
+        return [t for t in tools if t.name in ("ReadFile", "WriteFile")]
+
+
+DIAS_DA_SEMANA = [
+    "segunda-feira", "terça-feira", "quarta-feira",
+    "quinta-feira", "sexta-feira", "sábado", "domingo",
+]
 
 
 def build_instruction(context=None) -> str:
-    hoje = datetime.now().strftime("%d/%m/%Y")
-    dia_semana = datetime.now().strftime("%A")
+    agora = datetime.now()
+    hoje = agora.strftime("%d/%m/%Y")
+    dia_semana = DIAS_DA_SEMANA[agora.weekday()]
     return (
         f"Data atual do sistema: {hoje} ({dia_semana}).\n"
         "Você é um tutor especialista em criação e acompanhamento de planos de estudos personalizados.\n"
-        "Siga estritamente as regras de gating da skill 'plano-de-estudos'.\n"
-        "Se o usuário ainda não tiver fornecido todas as 4 informações obrigatórias "
-        "(1. Objetivo, 2. Prazo, 3. Disponibilidade e 4. Nível atual), "
-        "pergunte apenas o que falta e NÃO carregue nenhum recurso L3 da skill via load_skill_resource.\n"
-        "Somente quando as 4 informações estiverem completas, consulte os recursos da skill via load_skill_resource, "
-        "elabore o plano detalhado e salve o cronograma em CSV no arquivo 'plano-de-estudos.csv' usando a ferramenta de escrita de arquivo."
+        "Siga estritamente a regra de gating definida no corpo (L2) da skill 'plano-de-estudos': "
+        "antes de carregar qualquer recurso L3 (references/ ou assets/), confirme com o usuário "
+        "todas as informações obrigatórias exigidas por essa regra, perguntando apenas o que falta.\n"
+        "Com tudo confirmado, siga o workflow da skill, elabore o plano no formato JSON especificado, "
+        "salve o cronograma em CSV no diretório de planos conforme orientações de salvar_agenda.md, "
+        "usando a ferramenta de escrita de arquivo."
     )
 
 
