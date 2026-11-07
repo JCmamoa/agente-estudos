@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>agenteestudos</groupId>
+  <artifactId>ml-carga-risco</artifactId>
+  <version>0.1.0</version>
+  <packaging>jar</packaging>
+
+  <name>ml-carga-risco</name>
+  <description>Módulo ML (DJL) do agente-plano-de-estudos: prevê carga sustentável (TensorFlow) e risco de atraso (PyTorch), e grava planos/insights-ml.json para o agente Python consumir via ReadFile.</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <djl.version>0.40.0</djl.version>
+    <pytorch.native>2.7.1</pytorch.native>
+    <tensorflow.native>2.16.1</tensorflow.native>
+    <!-- Classificador da plataforma: cloud shell Linux = linux-x86_64; macOS = osx-aarch64 (M1/M2) ou osx-x86_64; Windows = win-x86_64 -->
+    <native.classifier>linux-x86_64</native.classifier>
+    <maven.compiler.release>21</maven.compiler.release>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>ai.djl</groupId>
+        <artifactId>bom</artifactId>
+        <version>${djl.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>ai.djl</groupId>
+      <artifactId>api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ai.djl</groupId>
+      <artifactId>basicdataset</artifactId>
+    </dependency>
+
+    <!-- Engine PyTorch: retorna probabilidade de atraso -->
+    <dependency>
+      <groupId>ai.djl.pytorch</groupId>
+      <artifactId>pytorch-engine</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>ai.djl.pytorch</groupId>
+      <artifactId>pytorch-native-cpu</artifactId>
+      <version>${pytorch.native}</version>
+      <classifier>${native.classifier}</classifier>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- Engine TensorFlow: prevê carga sustentável por dia -->
+    <dependency>
+      <groupId>ai.djl.tensorflow</groupId>
+      <artifactId>tensorflow-engine</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>ai.djl.tensorflow</groupId>
+      <artifactId>tensorflow-native-cpu</artifactId>
+      <version>${tensorflow.native}</version>
+      <classifier>${native.classifier}</classifier>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>2.0.17</version>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <configuration>
+          <mainClass>agenteestudos.ml.Main</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

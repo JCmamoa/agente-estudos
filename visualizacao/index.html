@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visão de Grafo — Plano de Estudos</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; background:#0b0f14; color:#e6edf3; }
+  header { padding: 16px 20px; border-bottom: 1px solid #1f2733; }
+  h1 { margin: 0; font-size: 18px; }
+  #status { font-size: 13px; color: #8b98a5; margin-top: 4px; }
+  svg { width: 100%; height: auto; display: block; }
+  .legenda { display:flex; gap:14px; padding: 10px 20px; font-size:12px; }
+  .legenda span::before { content:'⬤'; margin-right:4px; }
+  .d::before { color:#3b82f6; }
+  .b::before { color:#22c55e; } .m::before { color:#eab308; } .a::before { color:#ef4444; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Visão de Grafo — Plano de Estudos</h1>
+  <div id="status">carregando…</div>
+</header>
+<div class="legenda">
+  <span class="d">dia</span>
+  <span class="b">risco baixo</span>
+  <span class="m">risco médio</span>
+  <span class="a">risco alto</span>
+</div>
+<svg id="grafo" xmlns="http://www.w3.org/2000/svg"></svg>
+
+<script>
+const COR = { baixo:'#22c55e', medio:'#eab308', alto:'#ef4444' };
+const LARG = 640, NO_H = 44, DIA_H = 56, X_NO = 64, X_DIA = 24;
+
+async function carregar() {
+  const status = document.getElementById('status');
+  let insights;
+  try {
+    insights = await fetch('/planos/insights-ml.json').then(r => r.json());
+  } catch {
+    status.textContent = 'falha ao carregar /planos/insights-ml.json — sirva a raiz do projeto';
+    return;
+  }
+  if (insights.estado !== 'ok') {
+    status.textContent = insights.mensagem || 'sem plano';
+    return;
+  }
+  status.textContent =
+      'gerado em ' + insights.gerado_em +
+      ' • carga: ' + insights.engine_carga +
+      ' • risco: ' + insights.engine_risco;
+  desenhar(insights);
+}
+
+function desenhar(ins) {
+  const svg = document.getElementById('grafo');
+
+  // 1) posiciona os nós (dias e sessões alternando)
+  const nós = [];
+  let y = 28;
+  ins.dias.forEach(dia => {
+    nós.push({ tipo:'dia', y, dia, id:'dia-' + dia.data });
+    y += DIA_H;
+    dia.sessoes.forEach(sessao => {
+      nós.push({ tipo:'sessao', y, sessao, dia, id:dia.data + '|' + sessao.assunto });
+      y += NO_H;
+    });
+  });
+  const H = y + 24;
+  svg.setAttribute('viewBox', `0 0 ${LARG} ${H}`);
+  svg.setAttribute('width', LARG);
+  svg.setAttribute('height', H);
+
+  // 2) arestas: cadeia simples conectando cada nó ao seguinte (ordem cronológica)
+  const partes = [];
+  for (let i = 0; i < nós.length - 1; i++) {
+    const a = nós[i], b = nós[i + 1];
+    const cor = b.tipo === 'dia' ? '#3b82f6' : COR[b.dia.nivel];
+    const y1 = a.y + (a.tipo === 'dia' ? 26 : 30);
+    const y2 = b.y;
+    const x1 = a.tipo === 'dia' ? X_DIA + 18 : X_NO;
+    const x2 = b.tipo === 'dia' ? X_DIA + 18 : X_NO;
+    partes.push(`<path d="M${x1},${y1} C${x1},${(y1+y2)/2} ${x2},${(y1+y2)/2} ${x2},${y2}"
+      fill="none" stroke="${cor}" stroke-width="2" opacity="0.55"/>`);
+  }
+
+  // 3) nós
+  nós.forEach(n => {
+    const corNó = n.tipo === 'dia' ? '#3b82f6' : COR[n.dia.nivel];
+    const texto = n.tipo === 'dia'
+      ? `${n.dia.data.slice(5)} — planejado ${n.dia.minutosPlanejados}m • sustentável ${n.dia.minutosSustentaveisPrevistos}m • atraso ${Math.round(n.dia.probAtraso*100)}%`
+      : `${n.sessao.assunto} (${n.sessao.inicio.slice(0,5)}–${n.sessao.fim.slice(0,5)})`;
+    if (n.tipo === 'dia') {
+      partes.push(`<g>
+        <rect x="${X_DIA}" y="${n.y}" width="${LARG - X_DIA - 16}" height="26" rx="6"
+              fill="#1c2736" stroke="${corNó}"/>
+        <text x="${X_DIA + 10}" y="${n.y + 17}" fill="#93c5fd" font-size="12"
+              font-family="system-ui">${esc(texto)}</text>
+      </g>`);
+    } else {
+      partes.push(`<g>
+        <rect x="${X_NO - 8}" y="${n.y}" width="${LARG - X_NO - 16}" height="30" rx="8"
+              fill="#111820" stroke="${corNó}" stroke-width="2"/>
+        <circle cx="${X_NO + 6}" cy="${n.y + 15}" r="5" fill="${corNó}"/>
+        <text x="${X_NO + 22}" y="${n.y + 19}" fill="#e6edf3" font-size="13"
+              font-family="system-ui">${esc(texto)}</text>
+      </g>`);
+    }
+  });
+
+  svg.innerHTML = partes.join('\n');
+}
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+}
+
+carregar();
+</script>
+</body>
+</html>

@@ -48,7 +48,10 @@ def build_instruction(context=None) -> str:
         "todas as informações obrigatórias exigidas por essa regra, perguntando apenas o que falta.\n"
         "Com tudo confirmado, siga o workflow da skill, elabore o plano no formato JSON especificado, "
         "salve o cronograma em CSV no diretório de planos conforme orientações de salvar_agenda.md, "
-        "usando a ferramenta de escrita de arquivo."
+        "usando a ferramenta de escrita de arquivo.\n"
+        "No replanejamento, se existir 'insights-ml.json' no diretório de planos, leia-o com ReadFile e "
+        "use os campos minutosSustentaveisPrevistos e probAtraso de cada dia para rebalancear as sessões, "
+        "sem concentrar todo o conteúdo num único dia."
     )
 
 
